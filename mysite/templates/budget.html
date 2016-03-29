@@ -1,0 +1,63 @@
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<!--
+  <script src="/static/js/jquery-1.12.2.min.js"></script>
+-->
+  <script>
+function sumTable(table) {
+    var total = 0;
+    $(table + " td.amount").each(function(){ total += Number($(this).text()); });
+    return total;
+}
+
+function displayTable(id, table) {
+    $.get("/rest/budget/" + id, function(data, status){
+        for (i in data['budget']['giving']) { 
+            $(table + " tbody").append(
+                "<tr>"
+                + "<td class='category'>" + data['budget']['giving'][i][0] + "</td>"
+                + "<td class='amount'>" + data['budget']['giving'][i][1] + "</td>"
+                + "</tr>"
+            );
+        }
+        $(table + " td.total").text(sumTable(table));
+    });
+
+    $("form input[type='text']").each(function(){ $(this).val(""); });
+}
+
+$(document).ready(function(){
+    displayTable({{ budget_id }}, "table#budget");
+
+    $("form input#add_item").click(function(){
+        $.post("/rest/add_item/{{ budget_id }}", 
+            {
+                'category': $("form input[name='category']").val(),
+                'amount': $("form input[name='amount']").val(),
+            },
+            displayTable("table#budget")
+        );
+    });
+
+    $("table#budget tbody tr").dblclick(function() {
+        $(this).remove();
+        $("table#budget td.total").text(sumTable("table#budget"));
+    });
+});
+  </script>
+</head>
+
+<body>
+  <form> <table> <tr>
+    <td> <input type="text" name="category"> </td>
+    <td> <input type="text" name="amount"> </td>
+    <td> <input id="add_item" type="button" value="add"> </td>
+  </tr> </table> </form>
+
+  <table id="budget" border="1">
+    <thead> <tr> <th>Category</th> <th>Amount</th> </tr> </thead>
+    <tbody> </tbody>
+    <tfoot> <tr> <td/> <td class="total"/> </tr> </tfoot>
+  </table>
+</body>
+

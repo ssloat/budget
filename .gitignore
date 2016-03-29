@@ -1,0 +1,9 @@
+bin/
+dump.py
+app.db
+vanguard.db
+*.pyc
+*.swp
+*.log
+*.txt
+jquery-1.12.2.min.js
