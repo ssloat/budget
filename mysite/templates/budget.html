@@ -10,24 +10,31 @@ function sumTable(table) {
     return total;
 }
 
-function displayTable(id, table) {
-    $.get("/rest/budget/" + id, function(data, status){
-        for (i in data['budget']['giving']) { 
-            $(table + " tbody").append(
-                "<tr>"
-                + "<td class='category'>" + data['budget']['giving'][i][0] + "</td>"
-                + "<td class='amount'>" + data['budget']['giving'][i][1] + "</td>"
-                + "</tr>"
-            );
-        }
-        $(table + " td.total").text(sumTable(table));
+function displayTable(data, table) {
+    $("table#budget tbody").empty();
+    for (i in data['budget']['giving']) { 
+        $(table + " tbody").append(
+            "<tr dbid=" + data['budget']['giving'][i][0] + ">"
+            + "<td class='category'>" + data['budget']['giving'][i][1] + "</td>"
+            + "<td class='amount'>" + data['budget']['giving'][i][2] + "</td>"
+            + "</tr>"
+        );
+    }
+    $("table#budget tbody tr").dblclick(function() {
+        $.post("/rest/remove_item/{{ budget_id }}", 
+            { 'dbid': $(this).attr('dbid') },
+            function(data, status) { displayTable(data, "table#budget"); }
+        );
     });
+    $(table + " td.total").text(sumTable(table));
 
     $("form input[type='text']").each(function(){ $(this).val(""); });
 }
 
 $(document).ready(function(){
-    displayTable({{ budget_id }}, "table#budget");
+    $.get("/rest/budget/{{ budget_id }}", function(data, status){
+        displayTable(data, "table#budget");
+    });
 
     $("form input#add_item").click(function(){
         $.post("/rest/add_item/{{ budget_id }}", 
@@ -35,14 +42,10 @@ $(document).ready(function(){
                 'category': $("form input[name='category']").val(),
                 'amount': $("form input[name='amount']").val(),
             },
-            displayTable("table#budget")
+            function(data, status) { displayTable(data, "table#budget"); }
         );
     });
 
-    $("table#budget tbody tr").dblclick(function() {
-        $(this).remove();
-        $("table#budget td.total").text(sumTable("table#budget"));
-    });
 });
   </script>
 </head>
