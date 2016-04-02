@@ -12,7 +12,7 @@ def rest_budget(budget_id):
 
     results = collections.defaultdict(list)
     for d in b.deductions:
-        results[d.category].append([d.id, d.name, d.amount])
+        results[d.category].append(d.html())
 
     return jsonify({ 'budget': results })
 
@@ -22,7 +22,9 @@ def rest_add_item(budget_id):
 
     json = request.form
 
-    db.session.add( Deduction(b, 'giving', json['category'], json['amount']) )
+    db.session.add( 
+        Deduction(b, json['category'], json['name'], json['monthly'], json['yearly']) 
+    )
     db.session.commit()
 
     return rest_budget(budget_id)

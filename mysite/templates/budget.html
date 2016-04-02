@@ -1,8 +1,8 @@
 <head>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 <!--
-  <script src="/static/js/jquery-1.12.2.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 -->
+  <script src="/static/js/jquery-1.12.2.min.js"></script>
   <script>
 function sumTable(table) {
     var total = 0;
@@ -10,39 +10,37 @@ function sumTable(table) {
     return total;
 }
 
-function displayTable(data, table) {
-    $("table#budget tbody").empty();
-    for (i in data['budget']['giving']) { 
-        $(table + " tbody").append(
-            "<tr dbid=" + data['budget']['giving'][i][0] + ">"
-            + "<td class='category'>" + data['budget']['giving'][i][1] + "</td>"
-            + "<td class='amount'>" + data['budget']['giving'][i][2] + "</td>"
-            + "</tr>"
-        );
-    }
-    $("table#budget tbody tr").dblclick(function() {
-        $.post("/rest/remove_item/{{ budget_id }}", 
-            { 'dbid': $(this).attr('dbid') },
-            function(data, status) { displayTable(data, "table#budget"); }
-        );
-    });
-    $(table + " td.total").text(sumTable(table));
+function buildTables(data) {
+    for (key in data['budget']) {
+        $("table#" + key + " tbody").empty();
+        for (i in data['budget'][key]) { 
+            $("table#" + key + " tbody").append(data['budget'][key][i]);
+        }
+        $("table#" + key + " tfoot td.total").text(sumTable("table#" + key));
 
-    $("form input[type='text']").each(function(){ $(this).val(""); });
+        $("table#" + key + " tbody tr").dblclick(function() {
+            $.post("/rest/remove_item/{{ budget_id }}", 
+                { 'dbid': $(this).attr('dbid') },
+                function(data, status) { buildTables(data); }
+            );
+        });
+
+        $("form#" + key + " input[type='text']").each(function(){ $(this).val(""); });
+    }
 }
 
 $(document).ready(function(){
-    $.get("/rest/budget/{{ budget_id }}", function(data, status){
-        displayTable(data, "table#budget");
-    });
+    $.get("/rest/budget/{{ budget_id }}", function(data, status){ buildTables(data); });
 
     $("form input#add_item").click(function(){
         $.post("/rest/add_item/{{ budget_id }}", 
             {
-                'category': $("form input[name='category']").val(),
-                'amount': $("form input[name='amount']").val(),
+                'category': $(this).attr('formid'),
+                'name': $("form input[name='name']").val(),
+                'monthly': $("form input[name='monthly']").val(),
+                'yearly': $("form input[name='yearly']").val(),
             },
-            function(data, status) { displayTable(data, "table#budget"); }
+            function(data, status) { buildTables(data); }
         );
     });
 
@@ -51,16 +49,36 @@ $(document).ready(function(){
 </head>
 
 <body>
-  <form> <table> <tr>
-    <td> <input type="text" name="category"> </td>
-    <td> <input type="text" name="amount"> </td>
-    <td> <input id="add_item" type="button" value="add"> </td>
-  </tr> </table> </form>
+  <table>
+    <tr><td>
+      <table id="{{ name }}" border="1">
+        <thead> <tr> 
+          <th style="width:200px">Name</th> 
+          <th style="width:100px">Monthly</th> 
+          <th style="width:100px">Monthly*12</th> 
+          <th style="width:100px">Yearly</th> 
+          <th style="width:100px">Total</th> 
+        </tr> </thead>
+      </table>
+    </td></tr>
+    {% for name in ('income', 'giving') %}
+    <tr><td>{{ name }}</td></tr>
+    <tr><td>
+      <table id="{{ name }}" border="1">
+        <tbody> </tbody>
+        <tfoot> <tr> <td/> <td/> <td/> <td/> <td style="text-align:right" class="total"/> </tr> </tfoot>
+      </table>
+    </td></tr>
 
-  <table id="budget" border="1">
-    <thead> <tr> <th>Category</th> <th>Amount</th> </tr> </thead>
-    <tbody> </tbody>
-    <tfoot> <tr> <td/> <td class="total"/> </tr> </tfoot>
+    <tr><td>
+      <form id="{{ name }}"> <table> <tr>
+        <td> <input type="text" name="name"> </td>
+        <td> <input type="text" name="monthly"> </td>
+        <td> <input type="text" name="yearly"> </td>
+        <td> <input id="add_item" type="button" value="add" formid="{{ name }}"> </td>
+      </tr> </table> </form>
+    </td></tr>
+  {% endfor %}
   </table>
 </body>
 

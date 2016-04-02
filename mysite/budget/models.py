@@ -25,12 +25,23 @@ class Deduction(db.Model):
     budget_id = db.Column(db.Integer, db.ForeignKey('budgets.id'))
     category = db.Column(db.String(64), nullable=False)
     name = db.Column(db.String(64), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
+    monthly = db.Column(db.Float, nullable=False)
+    yearly = db.Column(db.Float, nullable=False)
     pre_tax = db.Column(db.Boolean, nullable=False)
 
-    def __init__(self, budget, category, name, amount, pre_tax=None):
+    def __init__(self, budget, category, name, monthly, yearly, pre_tax=None):
         self.budget = budget
         self.category = category
         self.name = name
-        self.amount = amount
+        self.monthly = monthly
+        self.yearly = yearly
         self.pre_tax = pre_tax or False
+
+    def html(self):
+        return "<tr dbid=%d>" % self.id \
+            + " <td style='width:200px' class='name'>%s</td>" % self.name \
+            + " <td style='width:100px; text-align:right' class='monthly'>%s</td>" % self.monthly \
+            + " <td style='width:100px; text-align:right'>%s</td>" % (12 * self.monthly) \
+            + " <td style='width:100px; text-align:right' class='monthly'>%s</td>" % self.yearly \
+            + " <td style='width:100px; text-align:right' class='amount'>%s</td>" % (12*self.monthly + self.yearly) \
+            + " </tr>"
