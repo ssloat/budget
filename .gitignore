@@ -1,5 +1,6 @@
 bin/
 dump.py
+test.py
 app.db
 vanguard.db
 *.pyc

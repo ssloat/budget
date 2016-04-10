@@ -1,46 +1,26 @@
 <head>
-<!--
+  <link rel="stylesheet" href="/static/css/budget.css" type="text/css" />
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
--->
+  <script src="/static/js/budget.js"></script>
+<!--
   <script src="/static/js/jquery-1.12.2.min.js"></script>
+-->
   <script>
-function sumTable(table) {
-    var total = 0;
-    $(table + " td.amount").each(function(){ total += Number($(this).text()); });
-    return total;
-}
-
-function buildTables(data) {
-    for (key in data['budget']) {
-        $("table#" + key + " tbody").empty();
-        for (i in data['budget'][key]) { 
-            $("table#" + key + " tbody").append(data['budget'][key][i]);
-        }
-        $("table#" + key + " tfoot td.total").text(sumTable("table#" + key));
-
-        $("table#" + key + " tbody tr").dblclick(function() {
-            $.post("/rest/remove_item/{{ budget_id }}", 
-                { 'dbid': $(this).attr('dbid') },
-                function(data, status) { buildTables(data); }
-            );
-        });
-
-        $("form#" + key + " input[type='text']").each(function(){ $(this).val(""); });
-    }
-}
-
 $(document).ready(function(){
-    $.get("/rest/budget/{{ budget_id }}", function(data, status){ buildTables(data); });
+    $.get("/rest/budget/{{ budget_id }}", function(data, status){ 
+        buildTables(data, {{ budget_id }}); 
+        $("body > h1").text(data['name']);
+    });
 
     $("form input#add_item").click(function(){
         $.post("/rest/add_item/{{ budget_id }}", 
             {
-                'category': $(this).attr('formid'),
+                'category': $("form input[name='category']").val(),
                 'name': $("form input[name='name']").val(),
                 'monthly': $("form input[name='monthly']").val(),
                 'yearly': $("form input[name='yearly']").val(),
             },
-            function(data, status) { buildTables(data); }
+            function(data, status) { buildTables(data, {{ budget_id }}); }
         );
     });
 
@@ -49,36 +29,38 @@ $(document).ready(function(){
 </head>
 
 <body>
+  <h1></h1>
+  <form> 
   <table>
-    <tr><td>
-      <table id="{{ name }}" border="1">
-        <thead> <tr> 
-          <th style="width:200px">Name</th> 
-          <th style="width:100px">Monthly</th> 
-          <th style="width:100px">Monthly*12</th> 
-          <th style="width:100px">Yearly</th> 
-          <th style="width:100px">Total</th> 
-        </tr> </thead>
-      </table>
-    </td></tr>
-    {% for name in ('income', 'giving') %}
-    <tr><td>{{ name }}</td></tr>
-    <tr><td>
-      <table id="{{ name }}" border="1">
-        <tbody> </tbody>
-        <tfoot> <tr> <td/> <td/> <td/> <td/> <td style="text-align:right" class="total"/> </tr> </tfoot>
-      </table>
-    </td></tr>
+    <tr>
+      <th>Category</th>
+      <th>Name</th>
+      <th>Monthly*12</th>
+      <th>Yearly</th>
+      <th/>
+    </tr>
+    <tr>
+      <td> <input type="text" name="category" style="width:100px"> </td>
+      <td> <input type="text" name="name" style="width:100px"> </td>
+      <td> <input type="text" name="monthly" style="width:100px"> </td>
+      <td> <input type="text" name="yearly" style="width:100px"> </td>
+      <td> <input id="add_item" type="button" value="add"> </td>
+    </tr> 
+  </table> 
+  </form>
 
-    <tr><td>
-      <form id="{{ name }}"> <table> <tr>
-        <td> <input type="text" name="name"> </td>
-        <td> <input type="text" name="monthly"> </td>
-        <td> <input type="text" name="yearly"> </td>
-        <td> <input id="add_item" type="button" value="add" formid="{{ name }}"> </td>
-      </tr> </table> </form>
-    </td></tr>
-  {% endfor %}
+  <table id='budget' border="1">
+    <thead> 
+      <tr> 
+        <th style="width:100px">Name</th> 
+        <th style="width:80px">Monthly</th> 
+        <th style="width:80px">Monthly*12</th> 
+        <th style="width:80px">Yearly</th> 
+        <th style="width:80px">Total</th> 
+        <th/>
+      </tr> 
+    </thead>
+    <tbody> </tbody>
   </table>
 </body>
 
