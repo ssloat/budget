@@ -1,5 +1,7 @@
 from mysite import db
 
+from .tax_rates import TaxRate, tax
+
 import datetime
 import time
 import os
@@ -12,11 +14,15 @@ class Budget(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False)
+    year = db.Column(db.Integer(), nullable=False)
+    status = db.Column(db.String(64), nullable=False)
 
     items = db.relationship('Item', backref='budget')
 
-    def __init__(self, name):
+    def __init__(self, name, year, status):
         self.name = name
+        self.year = year
+        self.status = status
 
     def html(self):
         results = {}
@@ -45,6 +51,19 @@ class Budget(db.Model):
     @property
     def agi(self):
         return self.income - self.pretax
+
+    @property
+    def state_tax(self):
+        rates = db.session.query(TaxRate).filter(
+            TaxRate.name=='Illinois',
+            TaxRate.year==self.year,
+            TaxRate.status==self.status,
+        ).all()
+
+        print rates
+
+        return tax(rates, self.agi)
+
 
 class Table(object):
     sortkeys = {'income': 1, 'pretax': 2}
@@ -92,6 +111,9 @@ class Item(db.Model):
         self.monthly = monthly
         self.yearly = yearly
         self.deductible = deductible or 0.0
+
+    def __repr__(self):
+        return "<Item('%s', '%s', %f, %f)>" % (self.category, self.name, self.monthly, self.yearly)
 
     @property
     def total(self):
