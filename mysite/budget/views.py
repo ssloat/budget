@@ -3,7 +3,8 @@ import collections
 from mysite import app, db
 from mysite.budget.models import Budget, Item
 
-from flask import jsonify, render_template, request
+from flask import jsonify, render_template, request, redirect, url_for
+from flask.ext.login import current_user
 
 @app.template_filter('money')
 def money_filter(s):
@@ -46,3 +47,23 @@ def rest_remove_item(budget_id):
 @app.route('/budget/<int:budget_id>')
 def budget(budget_id):
     return render_template('budget.html', budget_id=budget_id)
+
+@app.route('/')
+def index():
+    if not current_user.is_authenticated:
+        return render_template('index.html')
+
+    budgets = db.session.query(Budget).filter(Budget.user_id==current_user.id).all()
+    return render_template('index.html', budgets=budgets)
+
+@app.route('/new-budget')
+def new_budget():
+    if not current_user.is_authenticated:
+        return render_template('index.html')
+
+    b = Budget(current_user.id, 'test', 2016, 'Single')
+    db.session.add(b)
+    db.session.commit()
+    return redirect(url_for('budget', budget_id=b.id))
+
+

@@ -13,13 +13,20 @@ class Budget(db.Model):
     __tablename__ = 'budgets'
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     name = db.Column(db.String(64), nullable=False)
     year = db.Column(db.Integer(), nullable=False)
     status = db.Column(db.String(64), nullable=False)
 
     items = db.relationship('Item', backref='budget')
+    user = db.relationship('User')
 
-    def __init__(self, name, year, status):
+    def __init__(self, user, name, year, status):
+        if isinstance(user, int):
+            self.user_id = user
+        else:
+            self.user = user
+
         self.name = name
         self.year = year
         self.status = status
