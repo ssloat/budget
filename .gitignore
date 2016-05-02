@@ -1,4 +1,6 @@
 bin/
+mysite/user
+config.py
 dump.py
 test.py
 app.db
