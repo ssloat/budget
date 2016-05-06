@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block scripts %}
-  <script src="/static/js/budget.js"></script>
+  {{super()}}
+  <script src="/static/budget/js/budget.js"></script>
   <script>
 $(document).ready(function(){
     $.get("/rest/budget/{{ budget_id }}", function(data, status){ 
@@ -24,7 +25,7 @@ $(document).ready(function(){
   </script>
 {% endblock %}
 
-{% block content %}
+{% block mainpane %}
   <div class="container-fluid">
     <form role="form"> 
       <div class="form-group">

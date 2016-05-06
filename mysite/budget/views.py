@@ -47,11 +47,11 @@ def rest_remove_item(budget_id):
  
 @app.route('/budget/<int:budget_id>', methods=['GET', 'POST'])
 def budget(budget_id):
-    return render_template('budget.html', budget_id=budget_id)
+    return render_template('budget/budget.html', budget_id=budget_id)
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/budgets', methods=['GET', 'POST'])
 @login_required
-def index():
+def budgets():
     form = NewBudgetForm(request.form)
 
     if request.method == 'POST' and form.validate_on_submit():
@@ -62,7 +62,7 @@ def index():
         return redirect(url_for('budget', budget_id=b.id))
 
     budgets = db.session.query(Budget).filter(Budget.user_id==current_user.id).all()
-    return render_template('index.html', form=form, budgets=budgets)
+    return render_template('budget/budgets.html', form=form, budgets=budgets)
 
 @app.route('/bootstrap')
 def bootstrap():
