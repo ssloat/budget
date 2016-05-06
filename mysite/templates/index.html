@@ -1,20 +1,32 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
 {% block content %}
     <h1>Budgets</h1>
-    {% for message in get_flashed_messages() %}
-        <p><b>Error</b>: {{ message }}</p>
-    {% endfor %}
-    {% if current_user.is_authenticated %}
-        <h2>Hi, {{ current_user.name }}!</h2>
-        {% for budget in budgets %}
-        <p><a href={{ url_for('budget', budget_id=budget.id) }}>{{budget.name}} {{budget.year}} {{budget.status}}</a></p>
-        {% endfor %}
-        <p><a href="/new-budget">New budget</a></p>
-        <p><a href="{{ url_for('logout') }}">Logout</a></p>
-    {% else %}
-        <h2>Please Sign In</h2>
-        <p><a href="{{ url_for('oauth_authorize', provider='facebook') }}">Login with Facebook</a></p>
-        <p><a href="{{ url_for('oauth_authorize', provider='google') }}">Login with Google</a></p>
-    {% endif %}
+    <table class="table">
+      {% for budget in budgets %}
+      <tr>
+        <td> 
+          <p><a href={{ url_for('budget', budget_id=budget.id) }}>{{budget.name}} {{budget.year}} {{budget.status}}</a></p>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <p><a data-toggle="modal" href="#myModal">New budget</a></p>
+    <div id="myModal" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">New Budget</h4>
+          </div>
+          <div class="modal-body"> {{ wtf.quick_form(form) }} </div>
+        </div>
+
+      </div>
+    </div>
+
 {% endblock %}
 

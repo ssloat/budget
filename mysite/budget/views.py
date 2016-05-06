@@ -2,9 +2,10 @@ import collections
 
 from mysite import app, db
 from mysite.budget.models import Budget, Item
+from mysite.budget.forms import NewBudgetForm
 
 from flask import jsonify, render_template, request, redirect, url_for
-from flask.ext.login import current_user
+from flask.ext.login import current_user, login_required
 
 @app.template_filter('money')
 def money_filter(s):
@@ -44,26 +45,25 @@ def rest_remove_item(budget_id):
 
     return rest_budget(budget_id)
  
-@app.route('/budget/<int:budget_id>')
+@app.route('/budget/<int:budget_id>', methods=['GET', 'POST'])
 def budget(budget_id):
     return render_template('budget.html', budget_id=budget_id)
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
+@login_required
 def index():
-    if not current_user.is_authenticated:
-        return render_template('index.html')
+    form = NewBudgetForm(request.form)
+
+    if request.method == 'POST' and form.validate_on_submit():
+        json = request.form
+        b = Budget(current_user.id, json['name'], int(json['year']), json['status'])
+        db.session.add(b)
+        db.session.commit()
+        return redirect(url_for('budget', budget_id=b.id))
 
     budgets = db.session.query(Budget).filter(Budget.user_id==current_user.id).all()
-    return render_template('index.html', budgets=budgets)
+    return render_template('index.html', form=form, budgets=budgets)
 
-@app.route('/new-budget')
-def new_budget():
-    if not current_user.is_authenticated:
-        return render_template('index.html')
-
-    b = Budget(current_user.id, 'test', 2016, 'Single')
-    db.session.add(b)
-    db.session.commit()
-    return redirect(url_for('budget', budget_id=b.id))
-
-
+@app.route('/bootstrap')
+def bootstrap():
+    return render_template('bootstrap.html')

@@ -1,10 +1,6 @@
-<head>
-  <link rel="stylesheet" href="/static/css/budget.css" type="text/css" />
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+{% extends "base.html" %}
+{% block scripts %}
   <script src="/static/js/budget.js"></script>
-<!--
-  <script src="/static/js/jquery-1.12.2.min.js"></script>
--->
   <script>
 $(document).ready(function(){
     $.get("/rest/budget/{{ budget_id }}", function(data, status){ 
@@ -12,7 +8,7 @@ $(document).ready(function(){
         $("body > h1").text(data['name']);
     });
 
-    $("form input#add_item").click(function(){
+    $("form input[name='add_item']").click(function(){
         $.post("/rest/add_item/{{ budget_id }}", 
             {
                 'category': $("form input[name='category']").val(),
@@ -26,41 +22,50 @@ $(document).ready(function(){
 
 });
   </script>
-</head>
+{% endblock %}
 
-<body>
-  <h1></h1>
-  <form> 
-  <table>
-    <tr>
-      <th>Category</th>
-      <th>Name</th>
-      <th>Monthly*12</th>
-      <th>Yearly</th>
-      <th/>
-    </tr>
-    <tr>
-      <td> <input type="text" name="category" style="width:100px"> </td>
-      <td> <input type="text" name="name" style="width:100px"> </td>
-      <td> <input type="text" name="monthly" style="width:100px"> </td>
-      <td> <input type="text" name="yearly" style="width:100px"> </td>
-      <td> <input id="add_item" type="button" value="add"> </td>
-    </tr> 
-  </table> 
-  </form>
+{% block content %}
+  <div class="container-fluid">
+    <form role="form"> 
+      <div class="form-group">
+        <div class="col-xs-2">
+          <label for="ex1">Category</label>
+          <input class="form-control" id="ex1" type="text" name="category">
+        </div>
+        <div class="col-xs-2">
+          <label for="ex2">Name</label>
+          <input class="form-control" id="ex2" type="text" name="name">
+        </div>
+        <div class="col-xs-2">
+          <label for="ex3">Monthly*12</label>
+          <input class="form-control" id="ex3" type="text" name="monthly">
+        </div>
+        <div class="col-xs-2">
+          <label for="ex4">Yearly</label>
+          <input class="form-control" id="ex4" type="text" name="yearly">
+        </div>
+        <div class="col-xs-1">
+          <label for="add_item">&nbsp</label>
+          <input class="btn btn-default" name="add_item" value="add">
+        </div>
+      </div>
+    </form>
+  </div>
 
-  <table id='budget' border="1">
-    <thead> 
-      <tr> 
-        <th style="width:100px">Name</th> 
-        <th style="width:80px">Monthly</th> 
-        <th style="width:80px">Monthly*12</th> 
-        <th style="width:80px">Yearly</th> 
-        <th style="width:80px">Total</th> 
-        <th/>
-      </tr> 
-    </thead>
-    <tbody> </tbody>
-  </table>
-</body>
 
+  <div class="container-fluid">
+    <table class="table table-hover" id='budget'>
+      <thead> 
+        <tr> 
+          <th>Name</th> 
+          <th>Monthly</th> 
+          <th>Monthly*12</th> 
+          <th>Yearly</th> 
+          <th>Total</th> 
+          <th/>
+        </tr> 
+      </thead>
+      <tbody> </tbody>
+    </table>
+  </div>
+{% endblock %}
