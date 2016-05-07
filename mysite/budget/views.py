@@ -12,15 +12,21 @@ def money_filter(s):
     return "{:,.2f}".format(s)
 
 @app.route('/rest/budget/<int:budget_id>', methods=['GET'])
+@login_required
 def rest_budget(budget_id):
     b = db.session.query(Budget).filter(Budget.id==budget_id).first()
+    if b.user_id != current_user.id:
+        return jsonify({'error': 'access denied'})
 
     data = {'name': b.name, 'rows': b.html() }
     return jsonify(data)
 
 @app.route('/rest/add_item/<int:budget_id>', methods=['POST'])
+@login_required
 def rest_add_item(budget_id):
     b = db.session.query(Budget).filter(Budget.id==budget_id).first()
+    if b.user_id != current_user.id:
+        return jsonify({'error': 'access denied'})
 
     json = request.form
 
@@ -35,8 +41,11 @@ def rest_add_item(budget_id):
     return rest_budget(budget_id)
     
 @app.route('/rest/remove_item/<int:budget_id>', methods=['POST'])
+@login_required
 def rest_remove_item(budget_id):
     b = db.session.query(Budget).filter(Budget.id==budget_id).first()
+    if b.user_id != current_user.id:
+        return jsonify({'error': 'access denied'})
 
     json = request.form
 
@@ -46,7 +55,12 @@ def rest_remove_item(budget_id):
     return rest_budget(budget_id)
  
 @app.route('/budget/<int:budget_id>', methods=['GET', 'POST'])
+@login_required
 def budget(budget_id):
+    b = db.session.query(Budget).filter(Budget.id==budget_id).first()
+    if b.user_id != current_user.id:
+        return render_template('user/access_denied.html')
+
     return render_template('budget/budget.html', budget_id=budget_id)
 
 @app.route('/budgets', methods=['GET', 'POST'])
