@@ -59,7 +59,7 @@ def rest_remove_item(budget_id):
 def budget(budget_id):
     b = db.session.query(Budget).filter(Budget.id==budget_id).first()
     if b.user_id != current_user.id:
-        return render_template('user/access_denied.html')
+        return redirect(url_for('access_denied'))
 
     return render_template('budget/budget.html', budget_id=budget_id)
 
@@ -78,6 +78,3 @@ def budgets():
     budgets = db.session.query(Budget).filter(Budget.user_id==current_user.id).all()
     return render_template('budget/budgets.html', form=form, budgets=budgets)
 
-@app.route('/bootstrap')
-def bootstrap():
-    return render_template('bootstrap.html')
