@@ -1,17 +1,24 @@
 import collections
 
-from mysite import app, db
-from mysite.budget.models import Budget, Item
-from mysite.budget.forms import NewBudgetForm
+from mysite import db
+from budget.models import Budget, Item
+from budget.forms import NewBudgetForm
 
-from flask import jsonify, render_template, request, redirect, url_for
+from flask import Blueprint, jsonify, render_template, request, redirect, url_for
 from flask.ext.login import current_user, login_required
 
-@app.template_filter('money')
+budget_bp = Blueprint('budget', __name__, 
+    template_folder='templates',
+    static_folder='static',
+)
+
+@budget_bp.app_template_filter('money')
 def money_filter(s):
     return "{:,.2f}".format(s)
 
-@app.route('/rest/budget/<int:budget_id>', methods=['GET'])
+#add_template_filter(money_filter, 'money')
+
+@budget_bp.route('/rest/budget/<int:budget_id>', methods=['GET'])
 @login_required
 def rest_budget(budget_id):
     b = db.session.query(Budget).filter(Budget.id==budget_id).first()
@@ -21,7 +28,7 @@ def rest_budget(budget_id):
     data = {'name': b.name, 'rows': b.html() }
     return jsonify(data)
 
-@app.route('/rest/add_item/<int:budget_id>', methods=['POST'])
+@budget_bp.route('/rest/add_item/<int:budget_id>', methods=['POST'])
 @login_required
 def rest_add_item(budget_id):
     b = db.session.query(Budget).filter(Budget.id==budget_id).first()
@@ -40,7 +47,7 @@ def rest_add_item(budget_id):
 
     return rest_budget(budget_id)
     
-@app.route('/rest/remove_item/<int:budget_id>', methods=['POST'])
+@budget_bp.route('/rest/remove_item/<int:budget_id>', methods=['POST'])
 @login_required
 def rest_remove_item(budget_id):
     b = db.session.query(Budget).filter(Budget.id==budget_id).first()
@@ -54,16 +61,16 @@ def rest_remove_item(budget_id):
 
     return rest_budget(budget_id)
  
-@app.route('/budget/<int:budget_id>', methods=['GET', 'POST'])
+@budget_bp.route('/budget/<int:budget_id>', methods=['GET', 'POST'])
 @login_required
 def budget(budget_id):
     b = db.session.query(Budget).filter(Budget.id==budget_id).first()
     if b.user_id != current_user.id:
-        return redirect(url_for('access_denied'))
+        return redirect(url_for('user.access_denied'))
 
-    return render_template('budget/budget.html', budget_id=budget_id)
+    return render_template('budget.html', budget_id=budget_id)
 
-@app.route('/budgets', methods=['GET', 'POST'])
+@budget_bp.route('/budgets', methods=['GET', 'POST'])
 @login_required
 def budgets():
     form = NewBudgetForm(request.form)
@@ -73,8 +80,8 @@ def budgets():
         b = Budget(current_user.id, json['name'], int(json['year']), json['status'])
         db.session.add(b)
         db.session.commit()
-        return redirect(url_for('budget', budget_id=b.id))
+        return redirect(url_for('budget.budget', budget_id=b.id))
 
     budgets = db.session.query(Budget).filter(Budget.user_id==current_user.id).all()
-    return render_template('budget/budgets.html', form=form, budgets=budgets)
+    return render_template('budgets.html', form=form, budgets=budgets)
 

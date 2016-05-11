@@ -1,6 +1,6 @@
 from mysite import db
 
-from .tax_rates import TaxRate, tax
+#from .tax_rates import TaxRate, tax
 
 import datetime
 import time
@@ -59,6 +59,7 @@ class Budget(db.Model):
     def agi(self):
         return self.income - self.pretax
 
+    '''
     @property
     def state_tax(self):
         rates = db.session.query(TaxRate).filter(
@@ -70,6 +71,7 @@ class Budget(db.Model):
         print rates
 
         return tax(rates, self.agi)
+    '''
 
 
 class Table(object):

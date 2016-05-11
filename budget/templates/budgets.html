@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block content %}
+{% block navbar_budget %} class="active" {% endblock %}
+
+{% block mainpane %}
     <h1>Budgets</h1>
     <table class="table">
       {% for budget in budgets %}
       <tr>
         <td> 
-          <p><a href={{ url_for('budget', budget_id=budget.id) }}>{{budget.name}} {{budget.year}} {{budget.status}}</a></p>
+          <p><a href={{ url_for('budget.budget', budget_id=budget.id) }}>{{budget.name}} {{budget.year}} {{budget.status}}</a></p>
         </td>
       </tr>
       {% endfor %}
