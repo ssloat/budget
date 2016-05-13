@@ -10,13 +10,12 @@ from flask.ext.login import current_user, login_required
 budget_bp = Blueprint('budget', __name__, 
     template_folder='templates',
     static_folder='static',
+    static_url_path='/static/budget',
 )
 
 @budget_bp.app_template_filter('money')
 def money_filter(s):
     return "{:,.2f}".format(s)
-
-#add_template_filter(money_filter, 'money')
 
 @budget_bp.route('/rest/budget/<int:budget_id>', methods=['GET'])
 @login_required

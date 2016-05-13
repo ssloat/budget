@@ -2,16 +2,16 @@
 {% block navbar_budget %} class="active" {% endblock %}
 {% block scripts %}
   {{super()}}
-  <script src="/static/budget/js/budget.js"></script>
+  <script src={{url_for('budget.static', filename='js/budget.js')}}></script>
   <script>
 $(document).ready(function(){
-    $.get("/rest/budget/{{ budget_id }}", function(data, status){ 
+    $.get("{{url_for('budget.rest_budget', budget_id=budget_id)}}", function(data, status){ 
         buildTables(data, {{ budget_id }}); 
         $("body > h1").text(data['name']);
     });
 
     $("form input[name='add_item']").click(function(){
-        $.post("/rest/add_item/{{ budget_id }}", 
+        $.post("{{url_for('budget.rest_add_item', budget_id=budget_id)}}", 
             {
                 'category': $("form input[name='category']").val(),
                 'name': $("form input[name='name']").val(),
